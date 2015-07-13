@@ -67,14 +67,12 @@ public class ErrorOrValueTest {
 
 	@Test
 	public void testIfErrorReturn() {
-		d.setI(errorOr.ifErrorReturn(e -> IF_ERROR_NUM).otherwise(f));
-		assertThat(d.i).isEqualTo(expected);
+		assertThat(errorOr.ifErrorReturn(e -> IF_ERROR_NUM).otherwise(f)).isEqualTo(expected);
 	}
 
 	@Test
 	public void testIfNotErrorReturn() {
-		d.setI(errorOr.ifNotErrorReturn(f).otherwise(e -> IF_ERROR_NUM));
-		assertThat(d.i).isEqualTo(expected);
+		assertThat(errorOr.ifNotErrorReturn(f).otherwise(e -> IF_ERROR_NUM)).isEqualTo(expected);
 	}
 
 	private static class DummyMutableClass {

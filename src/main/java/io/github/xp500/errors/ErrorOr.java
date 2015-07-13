@@ -1,8 +1,5 @@
 package io.github.xp500.errors;
 
-import io.github.xp500.errors.functional.FunctionWithReturnValue;
-import io.github.xp500.errors.functional.OneArgFunction;
-
 import java.util.function.Consumer;
 
 public interface ErrorOr<E, C> {
@@ -28,8 +25,5 @@ public interface ErrorOr<E, C> {
 	 * @return a {@link VoidElseExecutor<C>} that allows chaining for {@code else} actions.
 	 */
 	public abstract VoidElseExecutor<Consumer<E>> ifNotError(final C consumer);
-
-	public abstract <R> ReturnElseExecutor<R, ? extends FunctionWithReturnValue<R>> ifErrorReturn(
-		final OneArgFunction<E, R> f);
 
 }

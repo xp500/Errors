@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public final class Errors {
 
 	/**
-	 * Marker interface that represents {@link ErrorOr<E>} objects where the {@code or} is void.
+	 * Interface that represents {@link ErrorOr<E>} objects where the {@code or} is void.
 	 *
 	 * <p>
 	 * The typical use case for this interface is when a method returns void. For example
@@ -42,14 +42,52 @@ public final class Errors {
 	 *            the type of the error objects.
 	 */
 	public interface ErrorOrVoid<E> extends ErrorOr<E, Command> {
-		@Override
+
+		/**
+		 * Executes the given function if {@code this} object is an error. This is expected to be used chaining an
+		 * {@code otherwise()} so that the returned value of the whole operation is the return value of the given
+		 * function if {@code this} object is an error or the return value of the otherwise if it's not.
+		 *
+		 * <p>
+		 * For example
+		 *
+		 * <pre>
+		 * {
+		 * 	&#064;code
+		 * 	int i = Errors.forVoid().ifErrorReturn(e -&gt; 0).otherwise(() -&gt; 1);
+		 * }
+		 * </pre>
+		 *
+		 * @param function
+		 *            the function that will be executed if {@code this} object is an error.
+		 * @return the {@link ReturnElseExecutor} that will be used to chain this expression.
+		 */
 		<T> ReturnElseExecutor<T, Supplier<T>> ifErrorReturn(final OneArgFunction<E, T> function);
 
+		/**
+		 * Executes the given function if {@code this} object is not an error. This is expected to be used chaining an
+		 * {@code otherwise()} so that the returned value of the whole operation is the return value of the given
+		 * function if {@code this} object is an error or the return value of the otherwise if it's not.
+		 *
+		 * <p>
+		 * For example
+		 *
+		 * <pre>
+		 * {
+		 * 	&#064;code
+		 * 	int i = Errors.forVoid().ifErrorReturn(e -&gt; 0).otherwise(() -&gt; 1);
+		 * }
+		 * </pre>
+		 *
+		 * @param function
+		 *            the function that will be executed if {@code this} object is not an error.
+		 * @return the {@link ReturnElseExecutor} that will be used to chain this expression.
+		 */
 		<R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final Supplier<R> f);
 	}
 
 	/**
-	 * Marker interface that represents {@link ErrorOr<E>} objects where the {@code or} is an object of type {@code T}.
+	 * Interface that represents {@link ErrorOr<E>} objects where the {@code or} is an object of type {@code T}.
 	 *
 	 * <p>
 	 * The typical use case for this interface is when a method returns an object, but there could be errors. For
@@ -74,9 +112,47 @@ public final class Errors {
 	 *            the type of the value objects.
 	 */
 	public interface ErrorOrValue<E, T> extends ErrorOr<E, Consumer<T>> {
-		@Override
+
+		/**
+		 * Executes the given function if {@code this} object is an error. This is expected to be used chaining an
+		 * {@code otherwise()} so that the returned value of the whole operation is the return value of the given
+		 * function if {@code this} object is an error or the return value of the otherwise if it's not.
+		 *
+		 * <p>
+		 * For example
+		 *
+		 * <pre>
+		 * {
+		 * 	&#064;code
+		 * 	int i = Errors.forVoid().ifErrorReturn(e -&gt; 0).otherwise(() -&gt; 1);
+		 * }
+		 * </pre>
+		 *
+		 * @param function
+		 *            the function that will be executed if {@code this} object is an error.
+		 * @return the {@link ReturnElseExecutor} that will be used to chain this expression.
+		 */
 		<T1> ReturnElseExecutor<T1, OneArgFunction<T, T1>> ifErrorReturn(final OneArgFunction<E, T1> function);
 
+		/**
+		 * Executes the given function if {@code this} object is not an error. This is expected to be used chaining an
+		 * {@code otherwise()} so that the returned value of the whole operation is the return value of the given
+		 * function if {@code this} object is an error or the return value of the otherwise if it's not.
+		 *
+		 * <p>
+		 * For example
+		 *
+		 * <pre>
+		 * {
+		 * 	&#064;code
+		 * 	int i = Errors.forVoid().ifErrorReturn(e -&gt; 0).otherwise(() -&gt; 1);
+		 * }
+		 * </pre>
+		 *
+		 * @param function
+		 *            the function that will be executed if {@code this} object is not an error.
+		 * @return the {@link ReturnElseExecutor} that will be used to chain this expression.
+		 */
 		<R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final OneArgFunction<T, R> f);
 	}
 
