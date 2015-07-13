@@ -3,12 +3,10 @@ package io.github.xp500.errors;
 import static org.assertj.core.api.StrictAssertions.assertThat;
 import io.github.xp500.errors.Errors.ErrorOrVoid;
 import io.github.xp500.errors.functional.Command;
-import io.github.xp500.errors.functional.OneArgFunction;
 import io.github.xp500.errors.functional.Supplier;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.junit.Test;
@@ -34,10 +32,10 @@ public class ErrorOrVoidTest {
 
 	@Parameters
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] { { Errors.forValue(5),
+		return Arrays.asList(new Object[][] { { Errors.forVoid(),
 			IF_NOT_ERROR_NUM,
-			(Function<DummyMutableClass, Consumer<Integer>>) d -> v -> d.setI(IF_NOT_ERROR_NUM),
-			(OneArgFunction<Integer, Integer>) v -> IF_NOT_ERROR_NUM },
+			(Function<DummyMutableClass, Command>) d -> () -> d.setI(IF_NOT_ERROR_NUM),
+			(Supplier<Integer>) () -> IF_NOT_ERROR_NUM },
 			{ Errors.forVoidError(TestError.ERROR1),
 				IF_ERROR_NUM,
 				(Function<DummyMutableClass, Command>) d -> () -> d.setI(IF_NOT_ERROR_NUM),
@@ -68,7 +66,13 @@ public class ErrorOrVoidTest {
 
 	@Test
 	public void testIfErrorReturn() {
-		errorOr.ifErrorReturn(e -> IF_ERROR_NUM).otherwise(f);
+		d.setI(errorOr.ifErrorReturn(e -> IF_ERROR_NUM).otherwise(f));
+		assertThat(d.i).isEqualTo(expected);
+	}
+
+	@Test
+	public void testIfNotErrorReturn() {
+		d.setI(errorOr.ifNotErrorReturn(f).otherwise(e -> IF_ERROR_NUM));
 		assertThat(d.i).isEqualTo(expected);
 	}
 

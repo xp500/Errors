@@ -33,13 +33,13 @@ public class ErrorOrValueTest {
 	@Parameters
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] { { Errors.forValue(5),
-			IF_NOT_ERROR_NUM,
-			(Function<DummyMutableClass, Consumer<Integer>>) d -> v -> d.setI(IF_NOT_ERROR_NUM),
-			(OneArgFunction<Integer, Integer>) v -> IF_NOT_ERROR_NUM },
-			{ Errors.forValueError(TestError.ERROR1),
-				IF_ERROR_NUM,
+				IF_NOT_ERROR_NUM,
 				(Function<DummyMutableClass, Consumer<Integer>>) d -> v -> d.setI(IF_NOT_ERROR_NUM),
-				(OneArgFunction<Integer, Integer>) v -> IF_NOT_ERROR_NUM } });
+				(OneArgFunction<Integer, Integer>) v -> IF_NOT_ERROR_NUM },
+				{ Errors.forValueError(TestError.ERROR1),
+						IF_ERROR_NUM,
+						(Function<DummyMutableClass, Consumer<Integer>>) d -> v -> d.setI(IF_NOT_ERROR_NUM),
+						(OneArgFunction<Integer, Integer>) v -> IF_NOT_ERROR_NUM } });
 	}
 
 	public ErrorOrValueTest(
@@ -68,6 +68,12 @@ public class ErrorOrValueTest {
 	@Test
 	public void testIfErrorReturn() {
 		d.setI(errorOr.ifErrorReturn(e -> IF_ERROR_NUM).otherwise(f));
+		assertThat(d.i).isEqualTo(expected);
+	}
+
+	@Test
+	public void testIfNotErrorReturn() {
+		d.setI(errorOr.ifNotErrorReturn(f).otherwise(e -> IF_ERROR_NUM));
 		assertThat(d.i).isEqualTo(expected);
 	}
 

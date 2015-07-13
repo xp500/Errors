@@ -30,6 +30,6 @@ public interface ErrorOr<E, C> {
 	public abstract VoidElseExecutor<Consumer<E>> ifNotError(final C consumer);
 
 	public abstract <R> ReturnElseExecutor<R, ? extends FunctionWithReturnValue<R>> ifErrorReturn(
-			final OneArgFunction<E, R> f);
+		final OneArgFunction<E, R> f);
 
 }

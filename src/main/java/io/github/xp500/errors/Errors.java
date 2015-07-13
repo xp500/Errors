@@ -44,6 +44,8 @@ public final class Errors {
 	public interface ErrorOrVoid<E> extends ErrorOr<E, Command> {
 		@Override
 		<T> ReturnElseExecutor<T, Supplier<T>> ifErrorReturn(final OneArgFunction<E, T> function);
+
+		<R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final Supplier<R> f);
 	}
 
 	/**
@@ -74,6 +76,8 @@ public final class Errors {
 	public interface ErrorOrValue<E, T> extends ErrorOr<E, Consumer<T>> {
 		@Override
 		<T1> ReturnElseExecutor<T1, OneArgFunction<T, T1>> ifErrorReturn(final OneArgFunction<E, T1> function);
+
+		<R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final OneArgFunction<T, R> f);
 	}
 
 	/**
@@ -142,6 +146,12 @@ public final class Errors {
 		public <T1> ReturnElseExecutor<T1, OneArgFunction<T, T1>> ifErrorReturn(final OneArgFunction<E, T1> function) {
 			return new FunctionActionReturnElseExecutor<>(value);
 		}
+
+		@Override
+		public <R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final OneArgFunction<T, R> function) {
+			return new NoActionReturnElseExecutor<R, OneArgFunction<E, R>>(function.apply(value));
+		}
+
 	}
 
 	private static final class VoidImpl<E> extends NotError<E, Command> implements ErrorOrVoid<E> {
@@ -161,6 +171,11 @@ public final class Errors {
 			return new SupplierActionReturnElseExecutor<T>();
 		}
 
+		@Override
+		public <R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final Supplier<R> function) {
+			return new NoActionReturnElseExecutor<R, OneArgFunction<E, R>>(function.get());
+		}
+
 	}
 
 	private static final class ValueErrorImpl<E, T> extends ErrorImpl<E, Consumer<T>> implements ErrorOrValue<E, T> {
@@ -175,6 +190,10 @@ public final class Errors {
 			return new NoActionReturnElseExecutor<>(function.apply(error));
 		}
 
+		@Override
+		public <R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final OneArgFunction<T, R> function) {
+			return new FunctionActionReturnElseExecutor<>(error);
+		}
 	}
 
 	private static final class VoidErrorImpl<E> extends ErrorImpl<E, Command> implements ErrorOrVoid<E> {
@@ -189,6 +208,10 @@ public final class Errors {
 			return new NoActionReturnElseExecutor<>(function.apply(error));
 		}
 
+		@Override
+		public <R> ReturnElseExecutor<R, OneArgFunction<E, R>> ifNotErrorReturn(final Supplier<R> function) {
+			return new FunctionActionReturnElseExecutor<>(error);
+		}
 	}
 
 }
