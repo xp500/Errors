@@ -1,4 +1,4 @@
-package com.cred.utils;
+package io.github.xp500.errors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.StrictAssertions.assertThat;

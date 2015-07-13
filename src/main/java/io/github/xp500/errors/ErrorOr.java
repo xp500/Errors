@@ -1,4 +1,4 @@
-package com.cred.utils;
+package io.github.xp500.errors
 
 
 public abstract class ErrorOr<E, T> {
