@@ -1,5 +1,4 @@
-package io.github.xp500.errors
-
+package io.github.xp500.errors;
 
 public abstract class ErrorOr<E, T> {
     
@@ -96,8 +95,23 @@ public abstract class ErrorOr<E, T> {
 	}
 
     }
+    
+    private abstract static class ValueObj<E, T> extends ErrorOr<E, T> {
+	
+	@Override
+	public boolean isError() {
+	    return false;
+	}
+	
+	@Override
+	public E getErrorOrFail() {
+	    throw new IllegalStateException(
+		    "Tried to access the error of a value object. Have you called isError() first?");
+	}
+	
+    }
 
-    private static class ValueImpl<E, T> extends ErrorOr<E, T> {
+    private static class ValueImpl<E, T> extends ValueObj<E, T> {
 
 	private final T value;
 
@@ -110,20 +124,9 @@ public abstract class ErrorOr<E, T> {
 	    return value;
 	}
 
-	@Override
-	public boolean isError() {
-	    return false;
-	}
-
-	@Override
-	public E getErrorOrFail() {
-	    throw new IllegalStateException(
-		    "Tried to access the error of a value object. Have you called isError() first?");
-	}
-
     }
 
-    private static class VoidImpl<E, T> extends ErrorOr<E, T> {
+    private static class VoidImpl<E, T> extends ValueObj<E, T> {
 
 	private VoidImpl() {}
 
@@ -131,17 +134,6 @@ public abstract class ErrorOr<E, T> {
 	public T getValueOrFail() {
 	    throw new IllegalStateException(
 		    "Tried to access the value of a void object.");
-	}
-
-	@Override
-	public boolean isError() {
-	    return false;
-	}
-
-	@Override
-	public E getErrorOrFail() {
-	    throw new IllegalStateException(
-		    "Tried to access the error of a value object. Have you called isError() first?");
 	}
 
     }
