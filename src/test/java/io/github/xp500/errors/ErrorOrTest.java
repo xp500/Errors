@@ -1,72 +1,97 @@
 package io.github.xp500.errors;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.StrictAssertions.assertThat;
-import static org.assertj.core.api.StrictAssertions.assertThatThrownBy;
+import io.github.xp500.errors.functional.Command;
+import io.github.xp500.errors.functional.FunctionWithReturnValue;
+import io.github.xp500.errors.functional.OneArgFunction;
+import io.github.xp500.errors.functional.Supplier;
 
-import org.junit.Before;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
-public class ErrorOrTest {
+@RunWith(Parameterized.class)
+public class ErrorOrTest<C, F extends FunctionWithReturnValue<Integer>> {
 
     private static enum TestError {
 	ERROR1
     }
 
-    private ErrorOr<TestError, Integer> value;
-    private ErrorOr<TestError, Integer> error;
-    private ErrorOr<TestError, Void> voidValue;
+    private static final int IF_ERROR_NUM = 10;
+    private static final int IF_NOT_ERROR_NUM = 2;
 
-    @Before
-    public void setUp() {
-	error = ErrorOr.forError(TestError.ERROR1);
-	value = ErrorOr.forValue(5);
-	voidValue = ErrorOr.forVoid();
+    private final ErrorOr<TestError, C> errorOr;
+    private final int expected;
+    private final C consumer;
+    private final F f;
+    private final DummyMutableClass d;
+
+    @Parameters
+    public static Collection<Object[]> data() {
+	return Arrays.asList(new Object[][] {
+		{
+			Errors.forValue(5), IF_NOT_ERROR_NUM,
+			(Function<DummyMutableClass, Consumer<Integer>>) d -> v -> d.setI(IF_NOT_ERROR_NUM),
+			(OneArgFunction<Integer, Integer>) v -> IF_NOT_ERROR_NUM
+		},
+		{
+			Errors.forVoid(), IF_NOT_ERROR_NUM,
+			(Function<DummyMutableClass, Command>) d -> () -> d.setI(IF_NOT_ERROR_NUM),
+			(Supplier<Integer>) () -> IF_NOT_ERROR_NUM
+		},
+		{
+			Errors.forValueError(TestError.ERROR1), IF_ERROR_NUM,
+			(Function<DummyMutableClass, Consumer<Integer>>) d -> v -> d.setI(IF_NOT_ERROR_NUM),
+			(OneArgFunction<Integer, Integer>) v -> IF_NOT_ERROR_NUM
+		},
+		{
+			Errors.forVoidError(TestError.ERROR1), IF_ERROR_NUM,
+			(Function<DummyMutableClass, Command>) d -> () -> d.setI(IF_NOT_ERROR_NUM),
+			(Supplier<Integer>) () -> IF_NOT_ERROR_NUM
+		}
+	});
+    }
+
+    public ErrorOrTest(final ErrorOr<TestError, C> errorOr, final int expected,
+		       final Function<DummyMutableClass, C> consumerExtractor, final F f) {
+	this.errorOr = errorOr;
+	this.expected = expected;
+	d = new DummyMutableClass();
+	this.consumer = consumerExtractor.apply(d);
+	this.f = f;
     }
 
     @Test
-    public void testIsErrorWithErrorObject() {
-	assertThat(error.isError()).isTrue();
+    public void testIfError() {
+	errorOr.ifError(e -> d.setI(IF_ERROR_NUM)).otherwise(consumer);
+	assertThat(d.i).isEqualTo(expected);
     }
 
     @Test
-    public void testIsErrorWithValueObject() {
-	assertThat(value.isError()).isFalse();
+    public void testIfNotError() {
+	errorOr.ifNotError(consumer).otherwise(e -> d.setI(IF_ERROR_NUM));
+	assertThat(d.i).isEqualTo(expected);
     }
 
     @Test
-    public void testIsErrorWithVoidObject() {
-	assertThat(voidValue.isError()).isFalse();
+    public void testIfErrorReturn() {
+	errorOr.ifErrorReturn(e -> IF_ERROR_NUM).otherwise(f);
+	assertThat(d.i).isEqualTo(expected);
     }
 
-    @Test
-    public void testGetValueWithErrorObjectThrowsException() {
-	assertThatThrownBy(() -> error.getValueOrFail()).isInstanceOf(IllegalStateException.class);
-    }
+    private static class DummyMutableClass {
 
-    @Test
-    public void testGetValueWithValueObject() {
-	assertThat(value.getValueOrFail()).isEqualTo(5);
-    }
+	private int i;
 
-    @Test
-    public void testGetValueWithVoidObjectThrowsException() {
-	assertThatThrownBy(() -> voidValue.getValueOrFail()).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
-    public void testGetErrorWithErrorObject() {
-	assertThat(error.getErrorOrFail()).isEqualTo(TestError.ERROR1);
-    }
-
-    @Test
-    public void testGetErrorWithValueObjectThrowsException() {
-	assertThatThrownBy(() -> value.getErrorOrFail()).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
-    public void testGetErrorWithVoidObjectThrowsException() {
-	assertThatThrownBy(() -> voidValue.getErrorOrFail()).isInstanceOf(IllegalStateException.class);
+	public void setI(int i) {
+	    this.i = i;
+	}
     }
 
 }
